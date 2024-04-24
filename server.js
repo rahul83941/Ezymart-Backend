@@ -1,57 +1,48 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+const fs = require('fs');
+
 const app = express();
-const PORT = 10000;
-const dotenv=require('dotenv');
+const PORT = 3000;
 
-app.use(bodyParser.json())
+app.use(express.json());
 
-const DB="mongodb+srv://Ezymart:Ezymart%40123@cluster0.cle8yxm.mongodb.net/";
-mongoose.connect(DB)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Error connecting to MongoDB', err));
-
-
-
-
-const productSchema = new mongoose.Schema({
-  id: String, 
-  image: String,
-  images: [String],
-  name: String,
-  price: Number,
-  sizes: [Number],
-  description: String,
+// Health check endpoint
+app.get('/check', (req, res) => {
+    res.send('API is up and running!');
 });
 
 
-const Products = mongoose.model('Product', productSchema,"Products");
-
-
-app.get('/Products', async (req, res) => {
-  try {
-    const products = await Products.find();
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+app.get('/products', (req, res) => {
+    fs.readFile('products.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error reading products data');
+            return;
+        }
+        const products = JSON.parse(data);
+        res.json(products);
+    });
 });
 
-app.get('/products/:id', async (req, res) => {
-    try {
-      const product = await Products.findOne({ id: req.params.id });
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      res.json(product);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+
+app.get('/products/:id', (req, res) => {
+    const productId = req.params.id;
+    fs.readFile('products.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error reading products data');
+            return;
+        }
+        const products = JSON.parse(data);
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).send('Product not found');
+        }
+    });
+});
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});  
+    console.log(Server is running on port ${PORT});
+});
