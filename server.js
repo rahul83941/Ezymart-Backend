@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = 10000;
 const dotenv=require('dotenv');
-app.use(bodyParser.urlencoded({ extended: true }))
+
 app.use(bodyParser.json())
 
 const DB="mongodb+srv://Ezymart:Ezymart%40123@cluster0.cle8yxm.mongodb.net/";
@@ -29,7 +29,7 @@ const productSchema = new mongoose.Schema({
 const Products = mongoose.model('Product', productSchema,"Products");
 
 
-app.get('/products', async (req, res) => {
+app.get('/Products', async (req, res) => {
   try {
     const products = await Products.find();
     res.json(products);
